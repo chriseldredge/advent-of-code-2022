@@ -19,7 +19,7 @@ Top 3: \(self.sumTopBags(n: 3))
     }
 
     static func parse() -> Array<Array<Int>> {
-        let lines = Resources.loadLines(resoureName: "day1")
+        let lines = Resources.loadLines(resoureName: "day1", omittingEmptySubsequences: false)
         var bags = [[Int]]()
         var bag = [Int]()
         

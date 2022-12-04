@@ -10,6 +10,7 @@ Part 1: \(self.scorePart1())
 Part 2: \(self.scorePart2())
 """
     }
+    
     public enum Shape: UInt8 {
         case rock, paper, scissors
         
@@ -90,10 +91,6 @@ Part 2: \(self.scorePart2())
         var list = [Strat]()
         
         for line in Resources.loadLines(resoureName: "day2") {
-            if line.isEmpty {
-                continue
-            }
-            
             let a: Character = "A"
             let A = line[line.startIndex]
             let code = line[line.index(line.startIndex, offsetBy: 2)]

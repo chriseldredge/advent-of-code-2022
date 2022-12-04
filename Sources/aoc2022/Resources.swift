@@ -1,9 +1,9 @@
 import Foundation
 
 public struct Resources {
-    public static func loadLines(resoureName: String) -> Array<Substring> {
+    public static func loadLines(resoureName: String, omittingEmptySubsequences: Bool = true) -> Array<Substring> {
         return loadInput(resoureName: resoureName).split(
-            omittingEmptySubsequences: false,
+            omittingEmptySubsequences: omittingEmptySubsequences,
             whereSeparator: \.isNewline)
     }
     

@@ -5,7 +5,8 @@ public protocol Puzzle {
 public class Puzzles {
     let items = [
         day1(),
-        day2()
+        day2(),
+        day3()
     ] as [Puzzle]
 
     public func solveAll() {

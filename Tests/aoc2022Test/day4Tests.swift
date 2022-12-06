@@ -13,7 +13,7 @@ final class day4Tests : XCTestCase {
     }
     
     public func testPart1SampleAnswer() {
-        let subject = day4(input: day3.load(resourceName: "day4-sample"))
+        let subject = day4(input: day4.load(resourceName: "day4-sample"))
         
         let actual = subject.part1()
         

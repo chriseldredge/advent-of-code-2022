@@ -1,14 +1,13 @@
 import Foundation
 
 public class day4: Puzzle {
-    let input: Array<Substring>
+    var input = [Substring]()
     
-    public init(input: Array<Substring>) {
-        self.input = input
+    public init() {
     }
     
-    public convenience init() {
-        self.init(input: day4.load())
+    public func load(resourceName: String) {
+        input = Resources.loadLines(resoureName: resourceName)
     }
     
     public func solve() -> String {
@@ -52,9 +51,5 @@ Part 2: \(part2())
             .map{ Int($0)! }
         
         return bounds[0]...bounds[1]
-    }
-    
-    public static func load(resourceName: String = "day4") -> Array<Substring> {
-        Resources.loadLines(resoureName: resourceName)
     }
 }

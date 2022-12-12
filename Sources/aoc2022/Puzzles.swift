@@ -1,4 +1,5 @@
 public protocol Puzzle {
+    func load(resourceName: String)
     func solve() -> String
 }
 
@@ -18,9 +19,16 @@ public class Puzzles {
     ] as [Puzzle]
 
     public func solveAll() {
-        for i in items {
-            print("==================== \(i) ====================")
-            print(i.solve())
+        for (i, p) in items.enumerated() {
+            print("==================== Day \(i+1) ====================")
+            p.load(resourceName: "day\(i+1)")
+            print(p.solve())
         }
+    }
+    
+    public func solve(day: Int, resourceName: String?) {
+        let p = items[day-1]
+        p.load(resourceName: resourceName ?? "day\(day)")
+        print(p.solve())
     }
 }

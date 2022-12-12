@@ -1,20 +1,19 @@
 import Foundation
 
 public class day10: Puzzle {
-    public private(set) var input: [Substring]
+    public private(set) var input = [Substring]()
     
-    public init(input: [Substring]) {
-        self.input = input
+    public init() {
     }
     
-    public convenience init() {
-        self.init(input: day10.load())
+    public func load(resourceName: String) {
+        input = Resources.loadLines(resoureName: resourceName)
     }
     
     public func solve() -> String {
         return """
-Part 1: \(day10().part1())
-Part 2:\n\(day10().part2())
+Part 1: \(part1())
+Part 2:\n\(part2())
 """
     }
     
@@ -85,10 +84,6 @@ Part 2:\n\(day10().part2())
                 sigs.append(self.ticks * x)
             }
         }
-    }
-    
-    public static func load(resourceName: String = "day10") -> [Substring] {
-        Resources.loadLines(resoureName: resourceName)
     }
 }
 

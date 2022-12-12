@@ -1,22 +1,28 @@
 import Foundation
 
 public class day5: Puzzle {
-    public private(set) var stacks: [String: CharStack]
-    public private(set) var moves: [Move]
+    public private(set) var stacks = [String: CharStack]()
+    public private(set) var moves = [Move]()
+    public private(set) var resourceName = ""
     
-    public init(input: Array<Substring>) {
+    public init() {
+    }
+    
+    public func load(resourceName: String) {
+        self.resourceName = resourceName
+        let input = Resources.loadLines(resoureName: resourceName, omittingEmptySubsequences: false)
         self.stacks = day5.parseStacks(input: input)
         self.moves = day5.parseMoves(input: input)
     }
     
-    public convenience init() {
-        self.init(input: day5.load())
-    }
-    
     public func solve() -> String {
+        let a = part1()
+        load(resourceName: resourceName)
+        let b = part2()
+        
         return """
-Part 1: \(day5().part1())
-Part 2: \(day5().part2())
+Part 1: \(a)
+Part 2: \(b)
 """
     }
     
@@ -83,10 +89,6 @@ Part 2: \(day5().part2())
                 let args = line.components(separatedBy: " ")
                 return Move(qty: Int(args[1])!, from: args[3], to: args[5])
             }
-    }
-    
-    public static func load(resourceName: String = "day5") -> Array<Substring> {
-        Resources.loadLines(resoureName: resourceName, omittingEmptySubsequences: false)
     }
     
     public typealias Move = (qty: Int, from: String, to: String)

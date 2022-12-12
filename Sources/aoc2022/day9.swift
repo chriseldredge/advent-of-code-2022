@@ -1,16 +1,15 @@
 import Foundation
 
 class day9: Puzzle {
-    let input: [Substring]
+    public private(set) var input = [Substring]()
     
-    public init(input: [Substring]) {
-        self.input = input
+    public init() {
     }
     
-    public convenience init() {
-        self.init(input: day9.load())
+    public func load(resourceName: String) {
+        input = Resources.loadLines(resoureName: resourceName)
     }
- 
+    
     func solve() -> String {
         return """
 Part 1: \(part1())
@@ -40,10 +39,6 @@ Part 2: \(part2())
         
         //sim.printVisited(size: 26)
         return sim.visited.count
-    }
-    
-    public static func load(resourceName: String = "day9") -> [Substring] {
-        Resources.loadLines(resoureName: resourceName)
     }
     
     public class Sim {

@@ -1,7 +1,13 @@
 import Foundation
 
 public class day2: Puzzle {
+    var input = [Substring]()
+    
     public init() {
+    }
+    
+    public func load(resourceName: String) {
+        input = Resources.loadLines(resoureName: resourceName)
     }
     
     public func solve() -> String {
@@ -50,11 +56,11 @@ Part 2: \(self.scorePart2())
     }
     
     public func scorePart1() -> Int {
-        day2.parse(day2.parseAsShape).map(self.scoreStrat).reduce(0, +)
+        day2.parse(input: input, day2.parseAsShape).map(self.scoreStrat).reduce(0, +)
     }
     
     public func scorePart2() -> Int {
-        day2.parse(day2.parseAsCode).map(self.scoreStrat).reduce(0, +)
+        day2.parse(input: input, day2.parseAsCode).map(self.scoreStrat).reduce(0, +)
     }
 
     private func scoreStrat(strat: Strat) -> Int {
@@ -87,10 +93,10 @@ Part 2: \(self.scorePart2())
         return Shape(rawValue: code.asciiValue! - x.asciiValue!)!
     }
     
-    private static func parse(_ tfm: (Character, Shape) -> Shape) -> Array<Strat> {
+    private static func parse(input: [Substring], _ tfm: (Character, Shape) -> Shape) -> Array<Strat> {
         var list = [Strat]()
         
-        for line in Resources.loadLines(resoureName: "day2") {
+        for line in input {
             let a: Character = "A"
             let A = line[line.startIndex]
             let code = line[line.index(line.startIndex, offsetBy: 2)]

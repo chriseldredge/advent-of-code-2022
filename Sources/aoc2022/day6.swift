@@ -1,20 +1,19 @@
 import Foundation
 
 public class day6: Puzzle {
-    public private(set) var input: Substring
+    public private(set) var input: Substring = ""
     
-    public init(input: Substring) {
-        self.input = input
+    public init() {
     }
     
-    public convenience init() {
-        self.init(input: day6.load())
+    public func load(resourceName: String) {
+        input = Resources.loadLines(resoureName: resourceName).first!
     }
     
     public func solve() -> String {
         return """
-Part 1: \(day6().part1())
-Part 2: \(day6().part2())
+Part 1: \(part1())
+Part 2: \(part2())
 """
     }
     
@@ -46,9 +45,5 @@ Part 2: \(day6().part2())
         }
         
         return offset+count
-    }
-
-    public static func load(resourceName: String = "day6") -> Substring {
-        Resources.loadLines(resoureName: resourceName).first!
     }
 }

@@ -1,15 +1,14 @@
 import Foundation
 
 public class day7: Puzzle {
-    public private(set) var input: [Substring]
+    public private(set) var input = [Substring]()
     var machine = Machine()
     
-    public init(input: [Substring]) {
-        self.input = input
+    public init() {
     }
     
-    public convenience init() {
-        self.init(input: day7.load())
+    public func load(resourceName: String) {
+        input = Resources.loadLines(resoureName: resourceName)
     }
     
     public func solve() -> String {
@@ -113,10 +112,6 @@ Part 2: \(part2())
             return ListCommand()
         }
         return UnsupportedCommand()
-    }
-    
-    public static func load(resourceName: String = "day7") -> [Substring] {
-        Resources.loadLines(resoureName: resourceName)
     }
 }
 

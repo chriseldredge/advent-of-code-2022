@@ -3,15 +3,17 @@ import XCTest
 
 final class day5Tests : XCTestCase {
     public func testParse() {
-        let subject = day5(input: day5.load(resourceName: "day5-sample"))
-        
+        let subject = day5()
+        subject.load(resourceName: "day5-sample")
+      
         XCTAssertEqual(Set(subject.stacks.keys), ["1", "2", "3"])
         XCTAssertEqual(subject.stacks["1"]!.contents, ["Z", "N"])
         XCTAssertEqual(subject.stacks["2"]!.contents, ["M", "C", "D"])
     }
     
     public func testPart1SampleAnswer() {
-        let subject = day5(input: day5.load(resourceName: "day5-sample"))
+        let subject = day5()
+        subject.load(resourceName: "day5-sample")
         
         let actual = subject.part1()
         
@@ -19,7 +21,8 @@ final class day5Tests : XCTestCase {
     }
         
     public func testPart2SampleAnswer() {
-        let subject = day5(input: day5.load(resourceName: "day5-sample"))
+        let subject = day5()
+        subject.load(resourceName: "day5-sample")
         
         let actual = subject.part2()
         

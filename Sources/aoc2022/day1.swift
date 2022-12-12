@@ -1,6 +1,9 @@
 public class day1: Puzzle {
-    private static let data = parse()
+    private var bags = [[Int]]()
 
+    public init() {
+    }
+    
     public func solve() -> String {
         return """
 Top 1: \(self.sumTopBags(n: 1))
@@ -9,7 +12,7 @@ Top 3: \(self.sumTopBags(n: 3))
     }
     
     public func sumTopBags(n: Int) -> Int {
-        let x = day1.data
+        let x = bags
             .map{ $0.reduce(0, +) }
             .sorted{ $0 > $1 }
         
@@ -18,9 +21,10 @@ Top 3: \(self.sumTopBags(n: 3))
         return s.reduce(0, +)
     }
 
-    static func parse() -> Array<Array<Int>> {
-        let lines = Resources.loadLines(resoureName: "day1", omittingEmptySubsequences: false)
-        var bags = [[Int]]()
+    public func load(resourceName: String) {
+        let lines = Resources.loadLines(resoureName: resourceName, omittingEmptySubsequences: false)
+        
+        bags.removeAll()
         var bag = [Int]()
         
         for line in lines {
@@ -35,8 +39,6 @@ Top 3: \(self.sumTopBags(n: 3))
         if (!bag.isEmpty) {
             bags.append(bag)
         }
-        
-        return bags
     }
 }
 

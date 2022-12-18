@@ -37,10 +37,12 @@ Part 2: \(part2())
         
         var ans = 0
         
-        for (s1, maxp1) in g.subsets {
-            for (s2, maxp2) in g.subsets {
+        let list = Array<Set<String>>(g.subsets.keys)
+
+        for (i, s1) in list.enumerated() {
+            for s2 in list[i...] {
                 if s1.intersection(s2).isEmpty {
-                    ans = max(ans, maxp1 + maxp2)
+                    ans = max(ans, g.subsets[s1]! + g.subsets[s2]!)
                 }
             }
         }

@@ -1,0 +1,208 @@
+import Foundation
+
+public class day17: Puzzle {
+    public private(set) var input: Substring = ""
+    
+    var puffs = [Int]()
+    var _puffCount = 0
+    var nextPuff: Int {
+        let next = puffs[_puffCount]
+        _puffCount = (_puffCount + 1) % puffs.count
+        return next
+    }
+    
+    let shapes = [
+        [Point(x: 0, y: 0), Point(x: 1, y: 0), Point(x: 2, y: 0), Point(x: 3, y: 0)],
+        [Point(x: 0, y: 1), Point(x: 1, y: 1), Point(x: 2, y: 1), Point(x: 1, y: 0), Point(x: 1, y: 2)],
+        [Point(x: 0, y: 0), Point(x: 1, y: 0), Point(x: 2, y: 0), Point(x: 2, y: 1), Point(x: 2, y: 2)],
+        [Point(x: 0, y: 0), Point(x: 0, y: 1), Point(x: 0, y: 2), Point(x: 0, y: 3)],
+        [Point(x: 0, y: 0), Point(x: 1, y: 0), Point(x: 0, y: 1), Point(x: 1, y: 1)],
+    ]
+
+    var _shapeCount = 0
+    var nextShape: Shape {
+        let next = shapes[_shapeCount]
+        _shapeCount = (_shapeCount + 1) % shapes.count
+        return Shape(points: next)
+    }
+    
+    public init() {
+    }
+    
+    public func load(resourceName: String) {
+        input = Resources.loadLines(resoureName: resourceName).first!
+    }
+    
+    public func solve() -> String {
+        return """
+Part 1: \(part1())
+Part 2: \(part2())
+"""
+    }
+    
+    public func part1() -> Int {
+        _puffCount = 0
+        _shapeCount = 0
+        
+        puffs = day17.parse(input: self.input)
+        
+        let grid = Grid()
+        
+        for _ in 1...2022 {
+            let shape = nextShape
+            
+            grid.place(shape)
+
+            move(grid: grid, shape: shape)
+            
+            grid.plop(shape)
+        }
+        
+        return grid.rows.count - 1
+    }
+    
+    public func part2() -> Int {
+        _puffCount = 0
+        _shapeCount = 0
+        
+//        puffs = day17.parse(input: self.input)
+//        
+//        let grid = Grid()
+//
+//        for i in 1...(20*shapes.count*puffs.count) {
+//            let shape = nextShape
+//
+//            grid.place(shape)
+//
+//            move(grid: grid, shape: shape)
+//
+//            grid.plop(shape)
+//
+//            if i % (shapes.count*puffs.count) == 0 {
+//                print("\(grid.rows.count - 1)")
+//            }
+//        }
+        
+        return 0
+    }
+    
+    func move(grid: Grid, shape: Shape) {
+        while true {
+            let dx = nextPuff
+            
+            if grid.valid(shape, dx: dx, dy: 0) {
+                shape.translate(dx: dx)
+            }
+            
+            if grid.valid(shape, dx: 0, dy: -1) {
+                shape.translate(dy: -1)
+            } else {
+                break
+            }
+        }
+    }
+    
+    static func parse(input: Substring) -> [Int] {
+        input.map{ ch in ch == "<" ? -1 : 1 }
+    }
+
+    class Grid: CustomStringConvertible {
+        let width = 7
+        
+        var rows = [[UInt8]]()
+        
+        init() {
+            addRow(repeating: 1)
+        }
+        
+        var description: String {
+            rows.reversed()
+                .compactMap { $0.map { $0 > 0 ? "#" : "."}.joined() }
+                .joined(separator: "\n")
+        }
+        
+        func place(_ shape: Shape) {
+            shape.translate(dx: 2, dy: rows.count + 3)
+        }
+        
+        func plop(_ shape: Shape) {
+            for p in shape.points {
+                while rows.count <= p.y {
+                    addRow()
+                }
+                rows[p.y][p.x] = 2
+            }
+        }
+
+        func valid(_ shape: Shape, dx: Int = 0, dy: Int = 0) -> Bool {
+            let anyOutOfBounds = shape.points
+                .first(where: { $0.x + dx < 0 || $0.x + dx >= 7 })
+            
+            if anyOutOfBounds != nil {
+                return false
+            }
+            
+            let anyCollision = shape.points
+                .filter{ $0.y + dy < rows.count }
+                .first(where: { rows[$0.y + dy][$0.x + dx] > 0 })
+            
+            if anyCollision != nil {
+                return false
+            }
+            
+            return true
+        }
+        
+        private func addRow(repeating: UInt8 = 0) {
+            rows.append([UInt8](repeating: repeating, count: width))
+        }
+    }
+    
+    class Shape {
+        var points: [Point]
+        
+        init(points: [Point]) {
+            self.points = points
+        }
+        
+        public func translate(dx: Int = 0, dy: Int = 0) {
+            points = points.map { $0.translate(dx: dx, dy: dy) }
+        }
+    }
+    
+    struct Point: Comparable, Hashable, CustomStringConvertible {
+        let x: Int
+        let y: Int
+        
+        init(x: Int, y: Int) {
+            self.x = x
+            self.y = y
+        }
+        
+        init(_ xy: String) {
+            let parts = xy.components(separatedBy: ",")
+            self.init(x: Int(parts.first!)!, y: Int(parts.last!)!)
+        }
+        
+        func translate(dx: Int = 0, dy: Int = 0) -> Point {
+            Point(x: self.x + dx, y: self.y + dy)
+        }
+        
+        var description: String {
+            return "(x: \(x), y: \(y))"
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(x)
+            hasher.combine(y)
+        }
+        
+        static func < (lhs: Point, rhs: Point) -> Bool {
+            lhs.x < rhs.x || lhs.y < rhs.y
+        }
+        
+        static func == (lhs: Point, rhs: Point) -> Bool {
+            lhs.x == rhs.x && lhs.y == rhs.y
+        }
+    }
+}

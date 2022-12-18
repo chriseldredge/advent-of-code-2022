@@ -21,10 +21,11 @@ public class Puzzles {
         day14(),
         day15(),
         day16(),
+        day17(),
     ] as [Puzzle]
 
     public func solveAll() {
-        for (i, p) in items.enumerated() {
+        for (i, p) in [day17()].enumerated() {
             print("==================== Day \(i+1) ====================")
             p.load(resourceName: "day\(i+1)")
             print(p.solve())

@@ -21,15 +21,31 @@ Part 2: \(part2())
         let g = day16.parse(input: input)
         
         g.calcDist()
-        print("dist=\(g.dists)")
-        let ans = g.maxp("AA", 0, 0, 30, Set<String>(["AA"]))
+
+        let ans = g.maxp("AA", 0, 0, 0, 30, Set<String>())
         print("Recursions=\(g.numRecursions)")
 
         return ans
     }
     
     public func part2() -> Int {
-        0
+        let g = day16.parse(input: input)
+        
+        g.calcDist()
+
+        let _ = g.maxp("AA", 0, 0, 0, 26, Set<String>())
+        
+        var ans = 0
+        
+        for (s1, maxp1) in g.subsets {
+            for (s2, maxp2) in g.subsets {
+                if s1.intersection(s2).isEmpty {
+                    ans = max(ans, maxp1 + maxp2)
+                }
+            }
+        }
+        
+        return ans
     }
     
     static func parse(input: [Substring]) -> Graph {
@@ -53,9 +69,14 @@ Part 2: \(part2())
         var rates = [String: Int]()
         var numRecursions = 0
         var dists = [String: [String: Int]]()
+        var subsets = [Set<String>: Int]()
         
         var v: Int {
             adj.count
+        }
+        
+        var usefulValves: Set<String> {
+            Set<String>(rates.filter{ $0.value > 0 }.keys)
         }
         
         func addVertex(name: String, rate: Int, adj: [String]) {
@@ -103,10 +124,18 @@ Part 2: \(part2())
             dists[s] = dist
         }
         
-        func maxp(_ v: String, _ p: Int, _ m: Int, _ tm: Int, _ visited: Set<String>) -> Int {
+        func maxp(_ v: String, _ partialScore: Int, _ p: Int, _ m: Int, _ tm: Int, _ visited: Set<String>) -> Int {
             numRecursions += 1
             
-            var best = p * (tm - m)
+            var best = partialScore + p * (tm - m)
+            
+            let subset = visited.union([v]).intersection(usefulValves)
+            
+            if let sb = subsets[subset] {
+                subsets[subset] = max(sb, best)
+            } else {
+                subsets[subset] = best
+            }
             
             for (n, dist) in dists[v]! {
                 if visited.contains(n) {
@@ -118,7 +147,7 @@ Part 2: \(part2())
                     continue
                 }
                 
-                best = max(best, p * cost + maxp(n, p + rates[n]!, m+cost, tm, visited.union([v])))
+                best = max(best, maxp(n, partialScore + p * cost, p + rates[n]!, m+cost, tm, visited.union([v])))
             }
             
             return best

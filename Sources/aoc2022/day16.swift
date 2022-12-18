@@ -19,10 +19,13 @@ Part 2: \(part2())
     
     public func part1() -> Int {
         let g = day16.parse(input: input)
-                
-        let a = g.next()
+        
+        g.calcDist()
+        print("dist=\(g.dists)")
+        let ans = g.maxp("AA", 0, 0, 30, Set<String>(["AA"]))
         print("Recursions=\(g.numRecursions)")
-        return a
+
+        return ans
     }
     
     public func part2() -> Int {
@@ -30,130 +33,95 @@ Part 2: \(part2())
     }
     
     static func parse(input: [Substring]) -> Graph {
-        var vertMap = [String: Int]()
-        
         let wordLines = input.map{ $0.components(separatedBy: .whitespaces) }
-        let keys = wordLines.map { $0[1] }
-        
-        for (index, key) in keys.enumerated() {
-            vertMap[key] = index
-        }
         
         let g = Graph()
         
         for words in wordLines {
             let rate = Int(words[4].components(separatedBy: "=").last!.trimmingCharacters(in: .punctuationCharacters))!
+            let v = words[1]
             let adj = words[9...]
-                .map{ vertMap[$0.trimmingCharacters(in: .punctuationCharacters)]! }
-            g.addVertex(name: words[1], rate: rate, adj: adj)
+                .map{ $0.trimmingCharacters(in: .punctuationCharacters) }
+            g.addVertex(name: v, rate: rate, adj: adj)
         }
         
         return g
     }
     
-    class Graph: CustomStringConvertible {
-        var adj = [[Int]]()
-        var rates = [Int]()
-        var names = [String]()
+    class Graph {
+        var adj = [String: [String]]()
+        var rates = [String: Int]()
         var numRecursions = 0
+        var dists = [String: [String: Int]]()
         
         var v: Int {
             adj.count
         }
         
-        func addVertex(name: String, rate: Int, adj: [Int]) {
-            self.names.append(name)
-            self.adj.append(adj)
-            self.rates.append(rate)
-        }
-        
-        var description: String {
-            "Graph rates=\(rates) adj=\(adj)"
-        }
-    
-        func next() -> Int {
-            let candidates = rates.enumerated()
-                .filter{ $0.1 > 0 }
-                .map { $0.0 }
+        func addVertex(name: String, rate: Int, adj: [String]) {
+            self.adj[name] = adj
             
-            let start = names.firstIndex(of: "AA")!
-            let mins = 30
-            
-            return brute(location: start, candidates: Set(candidates), mins: mins, sum: 0)
-        }
-        
-        func brute(location: Int, candidates: Set<Int>, mins: Int, sum: Int) -> Int {
-            guard mins > 0 else {
-                return sum
+            if rate > 0 || name == "AA" {
+                self.rates[name] = rate
             }
+        }
+        
+        func calcDist() {
+            let targets = Set(rates.keys)
+            
+            for v in targets {
+                calcDist(v, targets)
+            }
+        }
+        
+        func calcDist(_ s: String, _ targets: Set<String>) {
+            var dist = [String: Int]()
+            var q = [(String, Int)]()
+            var visited = Set<String>([s])
+            
+            for n in adj[s]! {
+                q.append((n, 1))
+            }
+            
+            while dist.count < targets.count - 1 {
+                let (v, d) = q.removeFirst()
+
+                if visited.contains(v) {
+                    continue
+                }
+                visited.insert(v)
+                
+                if targets.contains(v) {
+                    dist[v] = d
+                }
+                
+                for n in adj[v]! {
+                    q.append((n, d+1))
+                }
+            }
+            
+            dists[s] = dist
+        }
+        
+        func maxp(_ v: String, _ p: Int, _ m: Int, _ tm: Int, _ visited: Set<String>) -> Int {
             numRecursions += 1
-            var best = sum
-            var prio = [(u: Int, c: Set<Int>, bp: Int, score: Int, cost: Int)]()
-            for u in candidates {
-                var pred = [Int]()
-                var dist = [Int]()
-
-                bfs(start: location, end: u, pred: &pred, dist: &dist)
-                
-                let cost = dist[u] + 1
-                if cost >= mins {
+            
+            var best = p * (tm - m)
+            
+            for (n, dist) in dists[v]! {
+                if visited.contains(n) {
                     continue
                 }
-                let score = rates[u] * max(0, mins - cost)
                 
-                var remCan = Set(candidates)
-                remCan.remove(u)
-                
-                let bp = sum + score + bestPossible(candidates: remCan, mins: mins - cost)
-                prio.append((u: u, c: remCan, bp: bp, score: score, cost: cost))
-            }
-
-            for u in prio.sorted(by: { $0.bp > $1.bp }) {
-                if best > u.bp {
+                let cost = dist + 1
+                if m + cost >= tm {
                     continue
                 }
-                best = max(best, brute(location: u.u, candidates: u.c, mins: mins - u.cost, sum: sum + u.score))
+                
+                best = max(best, p * cost + maxp(n, p + rates[n]!, m+cost, tm, visited.union([v])))
             }
+            
             return best
-        }
-        
-        func bestPossible(candidates: Set<Int>, mins: Int) -> Int {
-            var sum = 0
-            for (index, rate) in candidates.map( { rates[$0] }).sorted(by: { $0 > $1 }).enumerated() {
-                sum += rate * max(0, mins - (index+1)*2)
-            }
-            return sum
-        }
-        
-        func bfs(start: Int, end: Int, pred: inout [Int], dist: inout [Int]) {
-            var queue = [start]
-            var visited = [Bool](repeating: false, count: v)
-
-            pred = [Int](repeating: -1, count: v)
-            dist = [Int](repeating: Int.max, count: v)
-
-            visited[start] = true
-            dist[start] = 0
-            
-            while !queue.isEmpty {
-                let u = queue.removeFirst()
-                
-                for neigh in adj[u] {
-                    if visited[neigh] {
-                        continue
-                    }
-                    visited[neigh] = true
-                    dist[neigh] = dist[u] + 1
-                    pred[neigh] = u
-                    queue.append(neigh)
-                    
-                    if neigh == end {
-                        return
-                    }
-                }
-            }
-            
-            fatalError("No path from \(start) to \(end)")
         }
     }
 }

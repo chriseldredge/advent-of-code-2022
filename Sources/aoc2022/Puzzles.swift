@@ -22,6 +22,7 @@ public class Puzzles {
         day15(),
         day16(),
         day17(),
+        day18(),
     ] as [Puzzle]
 
     public func solveAll() {

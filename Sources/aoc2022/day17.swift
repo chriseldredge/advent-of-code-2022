@@ -58,32 +58,85 @@ Part 2: \(part2())
             grid.plop(shape)
         }
         
-        return grid.rows.count - 1
+        return grid.height
     }
     
     public func part2() -> Int {
         _puffCount = 0
         _shapeCount = 0
         
-//        puffs = day17.parse(input: self.input)
-//        
-//        let grid = Grid()
-//
-//        for i in 1...(20*shapes.count*puffs.count) {
-//            let shape = nextShape
-//
-//            grid.place(shape)
-//
-//            move(grid: grid, shape: shape)
-//
-//            grid.plop(shape)
-//
-//            if i % (shapes.count*puffs.count) == 0 {
-//                print("\(grid.rows.count - 1)")
-//            }
-//        }
+        puffs = day17.parse(input: self.input)
         
+        let grid = Grid()
+        
+        var deltas = [[[UInt8]]: (itr: Int, height: Int)]()
+
+        for i in 0...(5*shapes.count*puffs.count) {
+            if i > shapes.count*puffs.count {
+                for s in stride(from: grid.rows.endIndex, through: shapes.count*puffs.count, by: -1) {
+                    if test(grid: grid, s: s) {
+                        let key = Array(grid.rows[s...])
+                        if let (pi, pr) = deltas[key] {
+                            let deltaRows = grid.height - pr
+                            let deltaItr = i - pi
+                            
+                            let iters = 1000000000000
+                            let repeatedBlockCount = (iters - pi) / deltaItr
+                            let repeatedRowCount = repeatedBlockCount * deltaRows
+                            
+                            let rem = iters - (repeatedBlockCount * deltaItr) - pi
+                            let crc = grid.height
+                            
+                            for _ in 1...rem {
+                                let shape = nextShape
+
+                                grid.place(shape)
+
+                                move(grid: grid, shape: shape)
+
+                                grid.plop(shape)
+                            }
+                            
+                            return pr + repeatedRowCount + (grid.height - crc)
+                        }
+                        
+                        deltas[key] = (itr: i, height: grid.height)
+                        break
+                    }
+                }
+            }
+
+            let shape = nextShape
+
+            grid.place(shape)
+
+            move(grid: grid, shape: shape)
+
+            grid.plop(shape)
+        }
+
+        for _ in 1...(5*shapes.count*puffs.count) {
+            let shape = nextShape
+
+            grid.place(shape)
+
+            move(grid: grid, shape: shape)
+
+            grid.plop(shape)
+        }
+
         return 0
+    }
+    
+    func test(grid: Grid, s: Int) -> Bool {
+        let e = grid.rows.endIndex-1
+        var i = 0
+        
+        while e - i > s && grid.rows[e - i] == grid.rows[s - i] {
+            i += 1
+        }
+        
+        return e - i == s && i > 5
     }
     
     func move(grid: Grid, shape: Shape) {
@@ -112,7 +165,10 @@ Part 2: \(part2())
         var rows = [[UInt8]]()
         
         init() {
-            addRow(repeating: 1)
+        }
+        
+        var height: Int {
+            rows.count
         }
         
         var description: String {
@@ -136,7 +192,7 @@ Part 2: \(part2())
 
         func valid(_ shape: Shape, dx: Int = 0, dy: Int = 0) -> Bool {
             let anyOutOfBounds = shape.points
-                .first(where: { $0.x + dx < 0 || $0.x + dx >= 7 })
+                .first(where: { $0.x + dx < 0 || $0.x + dx >= 7 || $0.y + dy < 0 })
             
             if anyOutOfBounds != nil {
                 return false

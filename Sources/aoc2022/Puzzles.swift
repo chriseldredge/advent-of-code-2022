@@ -1,6 +1,7 @@
 public protocol Puzzle {
     func load(resourceName: String)
-    func solve() -> String
+    func solvePart1() -> String
+    func solvePart2() -> String
 }
 
 public class Puzzles {
@@ -26,18 +27,21 @@ public class Puzzles {
         day19(),
         day20(),
     ] as [Puzzle]
-
-    public func solveAll() {
-        for (i, p) in [day17()].enumerated() {
-            print("==================== Day \(i+1) ====================")
-            p.load(resourceName: "day\(i+1)")
-            print(p.solve())
-        }
-    }
     
-    public func solve(day: Int, resourceName: String?) {
+    public func solve(day: Int, resourceName: String?, options: AdventOptions) {
         let p = items[day-1]
         p.load(resourceName: resourceName ?? "day\(day)")
-        print(p.solve())
+        print("==================== Day \(day) ====================")
+        
+        if let part = options.part {
+            if part == 1 {
+                print(p.solvePart1())
+            } else if part == 2 {
+                print(p.solvePart2())
+            }
+        } else {
+            print("Part 1: " + p.solvePart1())
+            print("Part 2: " + p.solvePart2())
+        }
     }
 }

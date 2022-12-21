@@ -18,13 +18,14 @@ public class day15: Puzzle {
         input = Resources.loadLines(resoureName: resourceName)
     }
     
-    public func solve() -> String {
-        return """
-Part 1: \(part1())
-Part 2: \(part2())
-"""
+    public func solvePart1() -> String {
+        return "\(part1())"
     }
     
+    public func solvePart2() -> String {
+        return "\(part2())"
+    }
+
     public func part1() -> Int {
         let sensors = day15.parse(input: input)
 

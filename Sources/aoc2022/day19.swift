@@ -10,13 +10,14 @@ public class day19: Puzzle {
         input = Resources.loadInput(resoureName: resourceName)
     }
     
-    public func solve() -> String {
-        return """
-Part 1: \(part1())
-Part 2: \(part2())
-"""
+    public func solvePart1() -> String {
+        return "\(part1())"
     }
     
+    public func solvePart2() -> String {
+        return "\(part2())"
+    }
+
     public func part1() -> Int {
         let bps = day19.parse(input: input)
         var total = 0
@@ -31,7 +32,16 @@ Part 2: \(part2())
     }
     
     public func part2() -> Int {
-        return -1
+        let bps = day19.parse(input: input)
+        var total = 0
+        
+        for bp in bps[0..<3] {
+            let state = Simulator(timeLimit: 32).execute(bp)
+            print("\(bp.id): \(state.score)")
+            total = total * state.score
+        }
+        
+        return total
     }
     
     static func parse(input: String) -> [Blueprint] {

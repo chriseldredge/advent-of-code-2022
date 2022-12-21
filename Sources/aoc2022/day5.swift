@@ -14,18 +14,17 @@ public class day5: Puzzle {
         self.stacks = day5.parseStacks(input: input)
         self.moves = day5.parseMoves(input: input)
     }
-    
-    public func solve() -> String {
-        let a = part1()
-        load(resourceName: resourceName)
-        let b = part2()
         
-        return """
-Part 1: \(a)
-Part 2: \(b)
-"""
+    public func solvePart1() -> String {
+        return "\(part1())"
     }
     
+    public func solvePart2() -> String {
+        load(resourceName: resourceName)
+        return "\(part2())"
+    }
+
+
     public func part1() -> String {
         for m in moves {
             for _ in 1...m.qty {

@@ -10,13 +10,14 @@ public class day2: Puzzle {
         input = Resources.loadLines(resoureName: resourceName)
     }
     
-    public func solve() -> String {
-        return """
-Part 1: \(self.scorePart1())
-Part 2: \(self.scorePart2())
-"""
+    public func solvePart1() -> String {
+        return "\(self.scorePart1())"
     }
     
+    public func solvePart2() -> String {
+        return "\(self.scorePart2())"
+    }
+
     public enum Shape: UInt8 {
         case rock, paper, scissors
         

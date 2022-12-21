@@ -4,13 +4,18 @@ public class day1: Puzzle {
     public init() {
     }
     
-    public func solve() -> String {
+    public func solvePart1() -> String {
         return """
 Top 1: \(self.sumTopBags(n: 1))
-Top 3: \(self.sumTopBags(n: 3))
 """
     }
     
+    public func solvePart2() -> String {
+        return """
+Top 3: \(self.sumTopBags(n: 3))
+"""
+    }
+
     public func sumTopBags(n: Int) -> Int {
         let x = bags
             .map{ $0.reduce(0, +) }

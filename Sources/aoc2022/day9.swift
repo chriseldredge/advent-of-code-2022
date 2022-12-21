@@ -10,13 +10,14 @@ class day9: Puzzle {
         input = Resources.loadLines(resoureName: resourceName)
     }
     
-    func solve() -> String {
-        return """
-Part 1: \(part1())
-Part 2: \(part2())
-"""
+    public func solvePart1() -> String {
+        return "\(part1())"
     }
     
+    public func solvePart2() -> String {
+        return "\(part2())"
+    }
+
     func part1() -> Int {
         let sim = Sim(n: 2)
         for line in input {

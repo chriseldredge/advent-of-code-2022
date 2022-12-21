@@ -33,7 +33,7 @@ public class day19: Puzzle {
     
     public func part2() -> Int {
         let bps = day19.parse(input: input)
-        var total = 0
+        var total = 1
         
         for bp in bps[0..<3] {
             let state = Simulator(timeLimit: 32).execute(bp)
@@ -67,15 +67,17 @@ public class day19: Puzzle {
     
     class Simulator {
         let timeLimit: Int
-        var itrs = 0
+        var cache = [State: State]()
         
         init(timeLimit: Int) {
             self.timeLimit = timeLimit
         }
         
-        func execute(_ bp: Blueprint,
-                     _ s: State = State(time: 1, materials: ["ore": 1], robots: ["ore": 1], robotBuilt: "", cost: Materials())) -> State
-        {
+        func execute(_ bp: Blueprint, _ s: State = .Initial) -> State {
+            if let hit = cache[s] {
+                return hit
+            }
+            
             var best = s
 
             for c in tick(bp: bp, s: s) {
@@ -86,6 +88,7 @@ public class day19: Puzzle {
                 }
             }
             
+            cache[s] = best
             return best
         }
         
@@ -134,27 +137,21 @@ public class day19: Puzzle {
         }
     }
     
-    struct State: CustomStringConvertible {
+    struct State: CustomStringConvertible, Hashable {
         var time: Int
         var materials: Materials
         var robots: [String: Int]
-        var robotBuilt: String
-        var cost: Materials
-        var extra: String
-        var timeAdded: Int
         
-        init(time: Int, materials: Materials, robots: [String : Int], robotBuilt: String, cost: Materials, extra: String = "", timeAdded: Int = 1) {
+        static let Initial = State(time: 1, materials: ["ore": 1], robots: ["ore": 1])
+        
+        init(time: Int, materials: Materials, robots: [String : Int]) {
             self.time = time
             self.materials = materials
             self.robots = robots
-            self.robotBuilt = robotBuilt
-            self.cost = cost
-            self.extra = extra
-            self.timeAdded = timeAdded
         }
         
         var description: String {
-            "\(extra)State time=\(time) materials=\(materials) robots=\(robots) robotBuilt=\(robotBuilt) cost=\(cost)"
+            "State time=\(time) materials=\(materials) robots=\(robots)"
         }
         
         var score: Int {
@@ -165,6 +162,12 @@ public class day19: Puzzle {
             Set(robots.filter{ $0.value > 0 }.keys)
         }
         
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(time)
+            hasher.combine(materials)
+            hasher.combine(robots)
+        }
+        
         func next(addTime: Int) -> State {
             var nextMaterials = materials
             
@@ -172,7 +175,7 @@ public class day19: Puzzle {
                 nextMaterials[type] = (nextMaterials[type] ?? 0) + (count * addTime)
             }
 
-            return State(time: time+addTime, materials: nextMaterials, robots: robots, robotBuilt: "", cost: Materials(), extra: description + "\n")
+            return State(time: time+addTime, materials: nextMaterials, robots: robots)
         }
 
         func next(addTime: Int, robotType: String, cost: Materials) -> State {
@@ -185,7 +188,7 @@ public class day19: Puzzle {
 
             nextRobots[robotType] = (nextRobots[robotType] ?? 0) + 1
 
-            return State(time: time+addTime, materials: nextMaterials, robots: nextRobots, robotBuilt: robotType, cost: cost, extra: description + "\n", timeAdded: addTime)
+            return State(time: time+addTime, materials: nextMaterials, robots: nextRobots)
         }
     }
 

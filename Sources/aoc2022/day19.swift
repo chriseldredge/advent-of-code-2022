@@ -22,9 +22,9 @@ Part 2: \(part2())
         var total = 0
         
         for bp in bps {
-            let maxg = Simulator(timeLimit: 24).execute(bp)
-            print("\(bp.id): \(maxg)")
-            total += maxg * bp.id
+            let state = Simulator(timeLimit: 24).execute(bp)
+            print("\(bp.id): \(state.score)")
+            total += state.score * bp.id
         }
         
         return total
@@ -55,6 +55,75 @@ Part 2: \(part2())
         return list
     }
     
+    class Simulator {
+        let timeLimit: Int
+        var itrs = 0
+        
+        init(timeLimit: Int) {
+            self.timeLimit = timeLimit
+        }
+        
+        func execute(_ bp: Blueprint,
+                     _ s: State = State(time: 1, materials: ["ore": 1], robots: ["ore": 1], robotBuilt: "", cost: Materials())) -> State
+        {
+            var best = s
+
+            for c in tick(bp: bp, s: s) {
+                let this = execute(bp, c)
+                
+                if this.score > best.score {
+                    best = this
+                }
+            }
+            
+            return best
+        }
+        
+        func tick(bp: Blueprint, s: State) -> [State] {
+            var states = [State]()
+
+            appendStates(bp: bp, s: s, results: &states)
+            
+            if states.isEmpty && s.time < timeLimit {
+                states.append(s.next(addTime: timeLimit - s.time))
+            }
+
+            return states
+        }
+        
+        func appendStates(bp: Blueprint, s: State, results: inout [State]) {
+            for (robotType, cost) in bp.costs {
+                let robotCount = s.robots[robotType] ?? 0
+                
+                if robotType != "geode" && robotCount == bp.maxNeeded(robotType) {
+                    continue
+                }
+                
+                let makeable = Set(s.robotTypes).intersection(cost.keys)
+                
+                if makeable.count < cost.count {
+                    continue
+                }
+         
+                let neededMaterials = (s.materials - cost)
+                    .filter{ $0.value < 0 }
+                
+                let timeToBuild = neededMaterials
+                    .map { abs($0.value) / s.robots[$0.key]! + min(1, abs($0.value) % s.robots[$0.key]!) + 1 }
+                    .max(by: { $0 < $1 })
+                
+                let addTime = timeToBuild ?? 1
+                
+                if s.time + addTime > timeLimit {
+                    continue
+                }
+                
+                let ns = s.next(addTime: addTime, robotType: robotType, cost: cost)
+                results.append(ns)
+            }
+        }
+    }
+    
     struct State: CustomStringConvertible {
         var time: Int
         var materials: Materials
@@ -76,6 +145,10 @@ Part 2: \(part2())
         
         var description: String {
             "\(extra)State time=\(time) materials=\(materials) robots=\(robots) robotBuilt=\(robotBuilt) cost=\(cost)"
+        }
+        
+        var score: Int {
+            materials["geode"] ?? 0
         }
         
         var robotTypes: Set<String> {
@@ -105,87 +178,6 @@ Part 2: \(part2())
             return State(time: time+addTime, materials: nextMaterials, robots: nextRobots, robotBuilt: robotType, cost: cost, extra: description + "\n", timeAdded: addTime)
         }
     }
-    
-    class Simulator {
-        let timeLimit: Int
-        
-        init(timeLimit: Int) {
-            self.timeLimit = timeLimit
-        }
-        
-        func execute(_ bp: Blueprint) -> Int {
-            let state = State(time: 1, materials: ["ore": 1], robots: ["ore": 1], robotBuilt: "", cost: Materials())
-            
-            var maxg = 0
-            var maxState = state
-            
-            var q = [state]
-            
-            while !q.isEmpty {
-                let s = q.removeFirst()
-                
-                let this = s.materials["geode"] ?? 0
-                
-                if this > maxg {
-                    maxg = this
-                    maxState = s
-                }
-                
-                var next = tick(bp: bp, s: s)
-                
-                if next.isEmpty && s.time < timeLimit {
-                    //todo: needed?
-                    next.append(s.next(addTime: timeLimit - s.time))
-                }
-                
-                q.append(contentsOf: next)
-            }
-            
-            print(maxState)
-            return maxg
-        }
-        
-        func tick(bp: Blueprint, s: State) -> [State] {
-            var states = [State]()
-
-            appendStates(bp: bp, s: s, results: &states)
-            
-            return states
-        }
-        
-        func appendStates(bp: Blueprint, s: State, results: inout [State]) {
-            for (robotType, cost) in bp.costs {
-                let makeable = Set(s.robotTypes).intersection(cost.keys)
-                
-                if makeable.count < cost.count {
-                    continue
-                }
-         
-                let neededMaterials = (s.materials - cost)
-                    .filter{ $0.value < 0 }
-                
-                let timeToBuild = neededMaterials
-                    .map { abs($0.value) / s.robots[$0.key]! + min(1, abs($0.value) % s.robots[$0.key]!) + 1 }
-
-                if let addTime = timeToBuild.max(by: { $0 < $1 }) {
-                    if s.time + addTime > timeLimit {
-                        continue
-                    }
-                    let ns = s.next(addTime: addTime, robotType: robotType, cost: cost)
-                    results.append(ns)
-                } else {
-                    
-                    //todo: only add if path is not visited
-                    if s.timeAdded == 1 || s.time + 1 > timeLimit {
-                        continue
-                    }
-                    
-                    let ns = s.next(addTime: 1, robotType: robotType, cost: cost)
-                    results.append(ns)
-                }
-            }
-        }
-    }
 
     class Blueprint: CustomStringConvertible {
         let id: Int
@@ -197,6 +189,10 @@ Part 2: \(part2())
         
         var description: String {
             "Blueprint \(id): \(costs)"
+        }
+        
+        func maxNeeded(_ robotType: String) -> Int {
+            costs.map{ (k, v) in v[robotType] ?? 0 }.max()!
         }
         
         func addRule(_ rule: String) {

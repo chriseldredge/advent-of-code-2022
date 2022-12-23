@@ -67,28 +67,27 @@ public class day19: Puzzle {
     
     class Simulator {
         let timeLimit: Int
-        var cache = [State: State]()
-        
+
         init(timeLimit: Int) {
             self.timeLimit = timeLimit
         }
         
         func execute(_ bp: Blueprint, _ s: State = .Initial) -> State {
-            if let hit = cache[s] {
-                return hit
-            }
-            
             var best = s
+            var q = [s]
 
-            for c in tick(bp: bp, s: s) {
-                let this = execute(bp, c)
-                
-                if this.score > best.score {
-                    best = this
+            while !q.isEmpty {
+                var _q = [State]()
+                for ns in q {
+                    if ns.score > best.score {
+                        best = ns
+                    }
+                    _q.append(contentsOf: tick(bp: bp, s: ns))
                 }
+                
+                q = _q
             }
             
-            cache[s] = best
             return best
         }
         

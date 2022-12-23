@@ -28,6 +28,7 @@ public class Puzzles {
         day20(),
         day21(),
         day22(),
+        day23(),
     ] as [Puzzle]
     
     public func solve(day: Int, resourceName: String?, options: AdventOptions) {

@@ -3,6 +3,9 @@ import Foundation
 public class day23: Puzzle {
     public private(set) var input = [Substring]()
   
+    var ticks = 0
+    let dirs = ["n", "s", "w", "e"]
+    
     public init() {
     }
     
@@ -20,21 +23,75 @@ public class day23: Puzzle {
 
     public func part1() -> Int {
         var points = parse()
+        
+        for _ in 0..<10 {
+            let next = tick(points)
+            points = next
+        }
+        
         return countEmpty(points)
     }
     
     public func part2() -> Int {
-        return 0
+        var points = parse()
+
+        ticks = 0
+
+        for _ in 0..<1000 {
+            let next = tick(points)
+            if next == points {
+                return ticks
+            }
+            points = next
+        }
+        
+        fatalError()
     }
     
     func tick(_ points: Set<Point>) -> Set<Point> {
-        let toMove = points.map{ hasNeighbor($0, points) }
+        let toMove = points.filter{ hasNeighbor($0, points) }
+        let happy = points.subtracting(toMove)
+        var stuck = Set<Point>()
+        var proposed = [Point: Set<Point>]()
         
-        return points
+        for p in toMove {
+            if let to = proposeMove(p, points) {
+                if let c = proposed[to] {
+                    proposed[to] = c.union([p])
+                } else {
+                    proposed[to] = Set([p])
+                }
+            } else {
+                stuck.insert(p)
+            }
+        }
+        
+        let collisions = proposed
+            .filter{ $0.value.count > 1 }
+            .compactMap{ $0.value }
+            .reduce(Set<Point>(), { $0.union($1) })
+        
+        let moved = proposed
+            .filter{ $0.value.count == 1 }
+
+        let result = happy.union(stuck).union(collisions).union(moved.keys)
+
+        assert(result.count == points.count)
+        ticks += 1
+        return result
     }
 
-    func proposeMove(_ p: Point, _ points: Set<Point>) -> (Point, Point)? {
-        
+    func proposeMove(_ p: Point, _ points: Set<Point>) -> Point? {
+        for i in 0..<4 {
+            let d = dirs[(ticks + i) % dirs.count]
+            let compasses = Compass.allCases
+                .filter{ $0.rawValue.contains(d) }
+
+            if !hasNeighbor(p, points, compases: compasses) {
+                return p.translate(compasses.first(where: {$0.rawValue == d})!.tup)
+            }
+        }
+        return nil
     }
     
     enum Compass: String, CaseIterable {
@@ -43,26 +100,27 @@ public class day23: Puzzle {
         var tup: (Int, Int) {
             switch self {
             case .ne:
-                return (-1, -1)
+                return (1, -1)
             case .n:
                 return (0, -1)
             case .nw:
-                return (1, -1)
+                return (-1, -1)
             case .w:
-                return (1, 0)
+                return (-1, 0)
             case .sw:
-                return (1, 1)
+                return (-1, 1)
             case .s:
                 return (0, 1)
             case .se:
-                return (-1, 1)
+                return (1, 1)
             case .e:
-                return (-1, 0)
+                return (1, 0)
             }
         }
     }
-    func hasNeighbor(_ p: Point, _ points: Set<Point>) -> Bool {
-        return !points.intersection(Compass.allCases.map(\.tup).map(p.translate)).isEmpty
+    
+    func hasNeighbor(_ p: Point, _ points: Set<Point>, compases: [Compass] = Compass.allCases) -> Bool {
+        return !points.intersection(compases.map(\.tup).map(p.translate)).isEmpty
     }
     
     func countEmpty(_ points: Set<Point>) -> Int {
